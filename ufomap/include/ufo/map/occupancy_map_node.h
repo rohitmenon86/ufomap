@@ -46,6 +46,8 @@
 #include <ufo/map/code.h>
 #include <ufo/map/color.h>
 #include <ufo/map/octree_node.h>
+#include <ufo/map/roi_data.h>
+
 
 namespace ufo::map
 {
@@ -122,6 +124,47 @@ struct ColorNode {
 	}
 };
 
+struct RoiNode {
+	RoiData roi_data;
+
+	RoiNode() {}
+
+	RoiNode(RoiData const& _roi_data) : roi_data(_roi_data) {}
+
+	RoiNode(float _roi_value) : roi_data(_roi_value) {}
+
+	RoiNode(uint8_t _class_id, float const& _roi_value) : roi_data(_class_id, _roi_value) {}
+
+	RoiNode(uint8_t _class_id, uint8_t _instance_id, float const& _roi_value) : roi_data(_class_id, _instance_id, _roi_value) {}
+
+	bool operator==(RoiNode const& rhs) const { return rhs.roi_data == roi_data; }
+	bool operator!=(RoiNode const& rhs) const { return rhs.roi_data != roi_data; }
+
+	/**
+	 * @brief Write the data from this node to stream s
+	 *
+	 * @param s The stream to write the data to
+	 * @return std::ostream&
+	 */
+	std::ostream& writeData(std::ostream& s) const
+	{
+		s.write(reinterpret_cast<char const*>(&roi_data), sizeof(roi_data));
+		return s;
+	}
+
+	/**
+	 * @brief Read the data for this node from stream s
+	 *
+	 * @param s The stream to read the data from
+	 * @return std::istream&
+	 */
+	std::istream& readData(std::istream& s)
+	{
+		s.read(reinterpret_cast<char*>(&roi_data), sizeof(roi_data));
+		return s;
+	}
+};
+
 template <typename T>
 struct ColorOccupancyNode : OccupancyNode<T>, ColorNode {
 	ColorOccupancyNode() {}
@@ -161,6 +204,53 @@ struct ColorOccupancyNode : OccupancyNode<T>, ColorNode {
 	std::istream& readData(std::istream& s)
 	{
 		return ColorNode::readData(OccupancyNode<T>::readData(s));
+	}
+};
+
+template <typename T>
+struct RoiOccupancyNode : OccupancyNode<T>, RoiNode {
+	RoiOccupancyNode() {}
+
+	RoiOccupancyNode(T occupancy, RoiData const& _roi_data = RoiData())
+	    : OccupancyNode<T>(occupancy), RoiNode(_roi_data)
+	{
+	}
+
+	RoiOccupancyNode(T occupancy, float const& roi_value_)
+	    : OccupancyNode<T>(occupancy), RoiNode(roi_value_)
+	{
+	}
+
+	bool operator==(RoiOccupancyNode const& rhs) const
+	{
+		return OccupancyNode<T>::operator==(rhs) && RoiNode::operator==(rhs);
+	}
+
+	bool operator!=(RoiOccupancyNode const& rhs) const
+	{
+		return OccupancyNode<T>::operator!=(rhs) || RoiNode::operator!=(rhs);
+	}
+
+	/**
+	 * @brief Write the data from this node to stream s
+	 *
+	 * @param s The stream to write the data to
+	 * @return std::ostream&
+	 */
+	std::ostream& writeData(std::ostream& s) const
+	{
+		return RoiNode::writeData(OccupancyNode<T>::writeData(s));
+	}
+
+	/**
+	 * @brief Read the data for this node from stream s
+	 *
+	 * @param s The stream to read the data from
+	 * @return std::istream&
+	 */
+	std::istream& readData(std::istream& s)
+	{
+		return RoiNode::readData(OccupancyNode<T>::readData(s));
 	}
 };
 

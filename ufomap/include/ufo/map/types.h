@@ -45,6 +45,7 @@
 // UFO
 #include <ufo/map/color.h>
 #include <ufo/math/vector3.h>
+#include <ufo/map/roi_data.h>
 
 // STD
 #include <cstdint>
@@ -100,6 +101,77 @@ class Point3Color : public Point3
  protected:
 	Color color_;
 };
+
+class Point3Roi : public Point3
+{
+ public:
+	Point3Roi() {}
+
+	Point3Roi(Point3 const& point, RoiData const& roi_data) : Point3(point), roi_data_(roi_data) {}
+
+	Point3Roi(Point3 const& point, uint8_t class_id, uint8_t instance_id, uint8_t roi_value) : Point3(point), roi_data_(class_id, instance_id, roi_value) {}
+
+	Point3Roi(double x, double y, double z,  RoiData const& roi_data) : Point3(x, y, z), roi_data_(roi_data) {}
+
+	Point3Roi(double x, double y, double z, uint8_t class_id, uint8_t instance_id, uint8_t roi_value): Point3(x, y, z),roi_data_(class_id, instance_id, roi_value) {}
+
+	Point3Roi(double x, double y, double z, uint8_t class_id, uint8_t roi_value): Point3(x, y, z),roi_data_(class_id, roi_value) {}
+
+	Point3Roi(double x, double y, double z, float const& roi_value)
+	    : Point3(x, y, z), roi_data_(roi_value)
+	{
+	}
+
+	Point3Roi(Point3 const& point) : Point3(point) {}
+
+	Point3Roi(double x, double y, double z) : Point3(x, y, z) {}
+
+	Point3Roi(uint8_t class_id, uint8_t instance_id, uint8_t roi_value) : roi_data_(class_id, instance_id, roi_value) {}
+
+	Point3Roi(uint8_t class_id, uint8_t roi_value) : roi_data_(class_id, roi_value) {}
+
+	Point3Roi(float roi_value) : roi_data_(roi_value) {}
+
+	Point3Roi(float const& roi_value) : roi_data_(roi_value) {}
+
+	Point3Roi& operator=(Point3Roi const& rhs)
+	{
+		Point3::operator=(rhs);
+		roi_data_ = rhs.roi_data_;
+		return *this;
+	}
+
+	RoiData const& getRoiData() const { return roi_data_; }	
+
+	RoiData& getRoiData() { return roi_data_; }	
+
+    void setRoiData(RoiData const& roi_data) {roi_data_ = roi_data;}
+
+	float const& getRoiValue() const { return roi_data_.roi_value; }
+
+	float& getRoiValue() { return roi_data_.roi_value; }
+
+	void setRoiValue(float const& roi_value) { roi_data_.roi_value = roi_value; }
+
+	uint8_t const& getClassID() const { return roi_data_.class_id; }
+
+	uint8_t& getClassID() { return roi_data_.class_id; }
+
+	void setClassID(uint8_t const& class_id) { roi_data_.class_id = class_id; }
+
+	uint8_t const& getInstanceID() const { return roi_data_.instance_id; }
+
+	uint8_t& getInstanceID() { return roi_data_.instance_id; }
+
+	void setInstanceID(uint8_t const& instance_id) { roi_data_.instance_id = instance_id; }
+
+
+
+
+ protected:
+	RoiData roi_data_;
+};
+
 }  // namespace ufo::map
 
 #endif  // UFO_MAP_TYPES_H
